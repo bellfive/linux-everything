@@ -6,18 +6,18 @@
 
 ```mermaid
 graph TD
-    User([User]) -->|Input| React[Frontend (React)]
-    React -->|IPC (invoke)| Tauri[Tauri Bridge]
-    Tauri -->|Command| Rust[Backend (Rust)]
+    User([User]) -->|Input| React["Frontend (React)"]
+    React -->|"IPC (invoke)"| Tauri["Tauri Bridge"]
+    Tauri -->|Command| Rust["Backend (Rust)"]
     
     subgraph "Backend (Fast & Safe)"
-        Rust -->|WalkDir| FileSystem[(File System)]
+        Rust -->|WalkDir| FileSystem["(File System)"]
         Rust -->|Glob| PatternMatching{Pattern Check}
         Rust -->|Serde| JSON[Result JSON]
     end
     
     subgraph "Frontend (Interactive)"
-        React -->|State| ResultsList[UI List]
+        React -->|State| ResultsList["UI List"]
         React -->|Event| OpenFile[xdg-open]
     end
 ```
