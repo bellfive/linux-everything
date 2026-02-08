@@ -13,14 +13,15 @@ struct SearchResult {
     path: String,
     name: String,
     is_dir: bool,
+    size: u64,
 }
 
 use glob::Pattern;
 
 #[tauri::command]
-fn search_files(query: String) -> Vec<SearchResult> {
+fn search_files(query: String, case_sensitive: bool, whole_word: bool) -> Vec<SearchResult> {
     let mut results = Vec::new();
-    let query_lower = query.to_lowercase();
+    let query_processed = if case_sensitive { query.clone() } else { query.to_lowercase() };
     let is_glob = query.contains('*') || query.contains('?');
     
     // Default to home directory for safety in prototype
@@ -28,26 +29,36 @@ fn search_files(query: String) -> Vec<SearchResult> {
     
     // Attempt to compile glob pattern if applicable
     let glob_pattern = if is_glob {
-        Pattern::new(&query_lower).ok()
+        if case_sensitive {
+             Pattern::new(&query).ok()
+        } else {
+             Pattern::new(&query.to_lowercase()).ok()
+        }
     } else {
         None
     };
 
     for entry in WalkDir::new(home_dir).into_iter().filter_map(|e| e.ok()) {
         let file_name = entry.file_name().to_string_lossy();
-        let file_name_lower = file_name.to_lowercase();
+        let file_name_processed = if case_sensitive { file_name.clone().into_owned() } else { file_name.to_lowercase() };
         
         let match_found = if let Some(ref pattern) = glob_pattern {
-            pattern.matches(&file_name_lower)
+            pattern.matches(&file_name_processed)
         } else {
-            file_name_lower.contains(&query_lower)
+            if whole_word {
+                file_name_processed == query_processed
+            } else {
+                file_name_processed.contains(&query_processed)
+            }
         };
 
         if match_found {
+            let size = entry.metadata().map(|m| m.len()).unwrap_or(0);
             results.push(SearchResult {
                 path: entry.path().to_string_lossy().to_string(),
                 name: file_name.to_string(),
                 is_dir: entry.file_type().is_dir(),
+                size,
             });
             
             if results.len() >= 3000 {
