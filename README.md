@@ -20,6 +20,16 @@
 *   **Framework**: Tauri (v1)
 *   **OS Integration**: `xdg-open`, native GTK file dialogs
 
+## 🏗️ Architecture
+
+Linux Everything is built with a decoupled architecture for maximum performance and security:
+
+*   **Backend (Rust)**: Handles high-speed file system traversal and system calls.
+*   **Frontend (React)**: Provides a modern, responsive user interface.
+*   **Bridge (Tauri)**: Manages secure IPC (Inter-Process Communication) between the UI and the system.
+
+Check out the [ARCHITECTURE.md](ARCHITECTURE.md) for a detailed technical breakdown and diagrams.
+
 ## 📦 Installation
 
 ### Prerequisites
